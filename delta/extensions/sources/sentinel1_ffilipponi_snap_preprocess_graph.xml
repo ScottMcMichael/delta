@@ -115,7 +115,7 @@
         <saveLatLon>false</saveLatLon>
         <saveIncidenceAngleFromEllipsoid>false</saveIncidenceAngleFromEllipsoid>
         <saveLocalIncidenceAngle>false</saveLocalIncidenceAngle>
-        <saveProjectedLocalIncidenceAngle>false</saveProjectedLocalIncidenceAngle>
+        <saveProjectedLocalIncidenceAngle>true</saveProjectedLocalIncidenceAngle>
         <saveSelectedSourceBand>true</saveSelectedSourceBand>
         <outputComplex>false</outputComplex>
         <applyRadiometricNormalization>false</applyRadiometricNormalization>
@@ -131,7 +131,6 @@
     <operator>LinearToFromdB</operator>
     <sources>
 	    <sourceProduct refid="Terrain-Correction"/>
-	    <!--sourceProduct refid="Speckle-Filter"/-->
     </sources>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
       <sourceBands/>

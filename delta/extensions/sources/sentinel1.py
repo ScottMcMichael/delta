@@ -73,6 +73,33 @@ def run_ffilipponi_preprocessing(source_file, target_file):
     os.system(cmd)
 
 
+def extract_metadata_gdal_args(folder):
+    '''Retrieve selected metadata from a SAFE folder and add them to gdal_translate arguments'''
+
+    annotation_folder = os.path.join(folder, 'annotation')
+    if not os.path.exists(folder) or not os.path.exists(annotation_folder):
+        print('Unable to find annotation folder!')
+        return ""
+    files = os.listdir(annotation_folder)
+    xml_files = [x for x in files if x.endswith('.xml')]
+    if not xml_files:
+        print('Unable to find xml annotation file!')
+        return ""
+    xml_path = os.path.join(annotation_folder, xml_files[0])
+    output = ""
+    DESIRED_METADATA = ['startTime', 'stopTime', 'absoluteOrbitNumber', 'missionDataTakeId']
+    with open(xml_path, 'r') as f:
+        for line in f:
+            if 'qualityInformation' in line:
+                break
+            for m in DESIRED_METADATA:
+                if m in line:
+                    start = line.find('>')
+                    stop = line.rfind('<')
+                    if (start >= 0) and (stop > 0):
+                        output += ' -mo ' + m + '=' + line[start+1:stop]
+    return output
+
 def unpack_s1_to_folder(zip_path, unpack_folder):
     '''Returns the merged image path from the unpack folder.
        Unpacks the zip file and merges the source images as needed.'''
@@ -136,7 +163,13 @@ def unpack_s1_to_folder(zip_path, unpack_folder):
                 raise Exception('Failed to run ESA SNAP preprocessing!')
             if os.path.getsize(temp_out_path) < MIN_IMAGE_SIZE:
                 raise Exception('SNAP encountered a problem processing the file!')
-            os.system('mv ' + temp_out_path + ' ' + merged_path)
+            
+            cmd = 'gdal_translate ' + temp_out_path + ' ' + merged_path
+            meta_args = extract_metadata_gdal_args(unpack_folder)
+            cmd = cmd + ' ' + meta_args + ' -a_nodata 0'
+            print(cmd)
+            os.system(cmd)
+            
         else:
             # Generate a merged file containing all input images as an N channel image
             cmd = 'gdalbuildvrt -separate ' + merged_path
